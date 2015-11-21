@@ -4,5 +4,9 @@
 Maven 
 Hibernate
 Spring
-retrifit
+retrofit
 Dropbox API
+#11/16/15
+DBconstruction
+#11/17/15
+authentication test
