@@ -7,6 +7,17 @@
 <title>Insert title here</title>
 </head>
 <body>
-<h1>${login}</h1>
+<h1>
+${clients.get(0)}
+</h1>
+<h1>
+${clients.get(1)}
+</h1>
+<h1>
+${clients.get(2)}
+</h1>
+
+
+
 </body>
 </html>

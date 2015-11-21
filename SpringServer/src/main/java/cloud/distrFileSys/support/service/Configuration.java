@@ -12,7 +12,10 @@ public class Configuration {
 	
 	public final static String DOWNLOAD_PROCESS_PATH="";
 	
-	public final static String[] ACCESS_TOKEN={"qkh1oWRdV5AAAAAAAAAAGk4j2QG0QGzPs39We1axFe5DrASsWQiWj2yxy0jT-1cq"};
+	public final static String[] ACCESS_TOKEN={
+		"UEL51iPANmAAAAAAAAAABupojQNQQbbABMzZ1_Ai-U3lNsad4UZLJU1t96gY4Ar_",
+		"3Tlm1-6FWdAAAAAAAAAABQO90jv5Mmgl_w8Obvx_JviZ1ODv__8qB6BYuUxpoXge",
+		"qkh1oWRdV5AAAAAAAAAAG927BK8Onynf1CFfBbwcGJQEItTKsoHX4eW7zdD4sqbv"};
 	
 	public final static String LOG_IN="/login/{id}"; 
 	

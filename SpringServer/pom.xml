@@ -191,7 +191,11 @@
 		<artifactId>converter-jackson</artifactId>
 		<version>1.9.0</version>
 	</dependency>
-	
+	<dependency>
+	    <groupId>javax.servlet</groupId>
+	    <artifactId>jstl</artifactId>
+	    <version>1.2</version>
+	</dependency>
 	
   </dependencies>
 
@@ -203,6 +207,8 @@
 		    <url>http://repo.springsource.org/libs-milestone</url>
 		</repository>
 	</repositories>
+	
+	
 	
 
 </project>

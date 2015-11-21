@@ -28,7 +28,7 @@ public class IndexController {
 	  
 	  
 	 
-	  
+	  //login test
 	  @RequestMapping(value = Configuration.LOG_IN)
 	  public String login(@PathVariable("id") long id,Model model) 
 			  throws Users.GetCurrentAccountException, DbxException 
@@ -43,10 +43,20 @@ public class IndexController {
 			  clients.add(client);
 		  }
 		 
+		  //print out login account
+		  for(DbxClientV2 c :clients){
+			  Users.FullAccount account = c.users.getCurrentAccount();
+		      System.out.println(account.name.displayName);
+		  }
 		  
-		  Users.FullAccount account = clients.get(0).users.getCurrentAccount();
-		  model.addAttribute("login", account.name.displayName);
-	      System.out.println(account.name.displayName);
+		  //print out on jsp
+		  List<String> jsp_clients=new ArrayList<String>();
+		  for(DbxClientV2 c :clients){
+			  Users.FullAccount account = c.users.getCurrentAccount();
+			  jsp_clients.add(account.name.displayName);
+		  }
+		  
+		  model.addAttribute("clients", jsp_clients);
 	        
 	      return "login";
 		  
