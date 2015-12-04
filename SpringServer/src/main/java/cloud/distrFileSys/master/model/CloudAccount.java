@@ -23,6 +23,7 @@ public class CloudAccount {
 	
 	private String accessToken;
 	
+	
 	private String password; // I haven't decided we shall record that or not;
 	
 	private String Provider;

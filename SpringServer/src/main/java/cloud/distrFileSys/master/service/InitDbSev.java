@@ -31,19 +31,38 @@ public class InitDbSev {
 		t.save(tm);
 		
 		
-		 //init cloud accout;
+		 //init cloud accout; hard code!!!
 		CloudAccount firstAccount=new CloudAccount();
 		
 		firstAccount.setAccount("chentaoz@udel.edu");
+		firstAccount.setAccessToken("UEL51iPANmAAAAAAAAAABupojQNQQbbABMzZ1_Ai-U3lNsad4UZLJU1t96gY4Ar_");
 		firstAccount.setProvider("dropbox");
 		
 		car.save(firstAccount);
+		
+		CloudAccount secondAccount=new CloudAccount();
+		
+		secondAccount.setAccount("freedom.22117@gmail.com");
+		secondAccount.setAccessToken("3Tlm1-6FWdAAAAAAAAAABQO90jv5Mmgl_w8Obvx_JviZ1ODv__8qB6BYuUxpoXge");
+		secondAccount.setProvider("dropbox");
+		
+		car.save(secondAccount);
+		
+		CloudAccount thirdAccount=new CloudAccount();
+		
+		thirdAccount.setAccount("huiding@udel.edu");
+		thirdAccount.setAccessToken("qkh1oWRdV5AAAAAAAAAAG927BK8Onynf1CFfBbwcGJQEItTKsoHX4eW7zdD4sqbv");
+		thirdAccount.setProvider("dropbox");
+		
+		car.save(thirdAccount);
 		
 		// init user
 		User u=new User();
 		
 		List<CloudAccount> accounts= new ArrayList<CloudAccount>();
 		accounts.add(firstAccount);
+		accounts.add(secondAccount);
+		accounts.add(thirdAccount);
 		
 		u.setCloudAccounts(accounts);
 		

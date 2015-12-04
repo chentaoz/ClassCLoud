@@ -5,5 +5,6 @@
 		<class>cloud.distrFileSys.master.model.File</class>
 		<class>cloud.distrFileSys.master.model.User</class>
 		<class>cloud.distrFileSys.master.model.CloudAccount</class>
+		<class>cloud.distrFileSys.master.model.CloudAccountRent</class>
 	</persistence-unit>
 </persistence>

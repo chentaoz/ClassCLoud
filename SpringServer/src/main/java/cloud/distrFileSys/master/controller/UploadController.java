@@ -3,10 +3,12 @@ package cloud.distrFileSys.master.controller;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,13 +26,21 @@ import com.dropbox.core.v2.Files.UploadSessionStartException;
 import com.dropbox.core.v2.Files.UploadSessionStartUploader;
 import com.dropbox.core.v2.Files.WriteMode;
 import com.dropbox.core.v2.Users;
+import com.dropbox.core.v2.Users.GetCurrentAccountException;
 import com.dropbox.core.v2.Users.GetSpaceUsageException;
 import com.dropbox.core.v2.Users.SpaceUsage;
 
+import cloud.distrFileSys.master.model.CloudAccount;
+import cloud.distrFileSys.master.model.CloudAccountRent;
+import cloud.distrFileSys.master.model.CloudAccountReps;
 import cloud.distrFileSys.master.model.File;
 import cloud.distrFileSys.master.model.FileReps;
+import cloud.distrFileSys.master.model.RentReps;
 import cloud.distrFileSys.master.model.Sessions;
+import cloud.distrFileSys.master.model.User;
+import cloud.distrFileSys.master.model.UserReps;
 import cloud.distrFileSys.support.service.Configuration;
+import cloud.distrFileSys.support.service.LoginThread;
 
 
 
@@ -40,14 +50,34 @@ public class UploadController {
 	@Autowired
 	FileReps fileReps;
 	
+	@Autowired
+	RentReps accRent;
+	
+	@Autowired
+	UserReps ur;
+	
+	@Autowired
+	CloudAccountReps car;
+	
+	//temperate store , session is better
+	HashMap<String,DbxClientV2> hm=new HashMap<String,DbxClientV2>();
+	HashMap<String,String> hm1=new HashMap<String,String>();
 	
 	@RequestMapping(value = Configuration.UPLOAD_PATH_START,method = RequestMethod.POST)
 	public Sessions applyToUpload (@RequestBody File f,@PathVariable("id") long id) {
-		String [] accessTokens;
+		ArrayList<String> accessTokens=new ArrayList<String>();
 		
 		Sessions response=new Sessions();
 		if(true){//todo: we need function to authenticate the user
-			accessTokens=Configuration.ACCESS_TOKEN;
+			User u=ur.findOne(id);
+			for(CloudAccount ca : u.getCloudAccounts()){
+				accessTokens.add(ca.getAccessToken());
+			}
+		}
+		else{
+			// authentication failed
+			response.setError("-1");
+			return response;
 		}
 		
 		
@@ -60,7 +90,7 @@ public class UploadController {
 		
 		
 	
-		//loaderbalanec
+		//loaderbalance
 		DbxClientV2 maxSpaceClient=null;
 		Long maxSpace=new Long(0);
 		for(DbxClientV2 client:clients){
@@ -79,20 +109,92 @@ public class UploadController {
 				response.setError("-2");
 				return response;//exception
 			}
+			Long cid=new Long(0);
+			try {
+				cid = car.findOneByAccount(users.getCurrentAccount().email, "dropbox").getcId();
+			} catch (GetCurrentAccountException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (DbxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Long newSpace;
+			if(accRent.getAllRentAccountBySupplierAccId(cid)!=null){
+				float totalRent=0;
+				for(CloudAccountRent car1:accRent.getAllRentAccountBySupplierAccId(cid)){
+					totalRent+=car1.getRate();
+				}
+				newSpace=(long) (us.allocation.getIndividual().allocated*(1-totalRent)-us.used);	
+			}
+			else{
+				newSpace=us.allocation.getIndividual().allocated-us.used;
+			}
+			
 			if(maxSpaceClient==null){
 				maxSpaceClient=client;
-				maxSpace=us.allocation.getIndividual().allocated-us.used;	
+				maxSpace=newSpace;	
+				
 			}
-			else if(maxSpace < (us.allocation.getIndividual().allocated-us.used)){
+			else if(maxSpace < newSpace){
 				maxSpaceClient=client;
-				maxSpace=us.allocation.getIndividual().allocated-us.used;	
+				maxSpace=newSpace;	
 			}
 			
 		}
 		
 		if(maxSpace<f.getSize()){
-			response.setError("-3");
-			return response;//no available space;
+			
+			//user's account space (exclude rent space) is full
+			//todo : actual space of user's own account space is not full, just single accont space is not enough 
+			// to upload the file but not combination of his/her accounts ,future effort should overcome this short;
+			
+			List<CloudAccountRent> rentAccs=accRent.getAllRentAccount(id);
+			if(rentAccs==null || rentAccs.size()==0){
+				response.setError("-3");
+				return response;//no available space;	
+			}
+			else{//handling rent space
+				for(CloudAccountRent rent :rentAccs){
+					Long supplierAccId=rent.getSupplierAccId();
+					CloudAccount cr=car.findOne(supplierAccId);
+					if(cr.getProvider()=="dropbox"){
+						//todo!!!!!!!!!!!!!!!!!!!!!
+						if(accRent.getAllRentAccount(id)!=null){
+							ArrayList<LoginThread> alThreads=new ArrayList<LoginThread>();
+							Long maxRentSpace=new Long(0);
+							String MaxAccEmail=null;
+							for(CloudAccountRent ca2:accRent.getAllRentAccount(id)){
+	
+								LoginThread lt=new LoginThread("dropbox",""+ca2.getSupplierAccId(),"ai",car);
+								lt.start();
+								lt.setVariable(ca2);
+								alThreads.add(lt);
+								
+							}
+							ArrayList<DbxClientV2> suppliers=new ArrayList<DbxClientV2> ();
+							for(LoginThread sngT: alThreads){
+								try {
+									sngT.join();//wait until thread finish.
+									if(sngT.getClient()==null)
+										continue;
+									else{
+										DbxClientV2 supplier=(DbxClientV2)(sngT.getClient());
+										
+									}
+									
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+							
+						}
+					}
+					
+				}
+			}
+			
+			
 		}
 		
 		UploadSessionStartUploader st=null;
@@ -118,6 +220,9 @@ public class UploadController {
 			response.setError("-2");
 			return response;//exception
 		}
+		//add to memory to memorize the client account;
+		hm.put(sessionId,maxSpaceClient);
+		
 		response.setSession(sessionId);
 		response.setAccessToken(maxSpaceClient.getAccessToken());
 		
@@ -126,14 +231,21 @@ public class UploadController {
     }
 	
 	@RequestMapping(value = Configuration.UPLOAD_PATH_END,method = RequestMethod.POST)
+	@Transactional
 	public int finishUpload (@RequestBody File f,@PathVariable("id") long id,
 			@PathVariable("session") Sessions session){
-		String accessTokens;
-		DbxClientV2 client=null;
+		DbxClientV2 client=hm.get(session.getSession());
+		ArrayList<String> accessTokens=new ArrayList<String>();
+
 		if(true){//todo: we need function to authenticate the user
-			accessTokens=session.getAccessToken();
-			DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
-			client = new DbxClientV2(config, accessTokens);
+			User u=ur.findOne(id);
+			for(CloudAccount ca : u.getCloudAccounts()){
+				accessTokens.add(ca.getAccessToken());
+			}
+		}
+		else{
+			// authentication failed
+			return -1;
 		}
 		
 		String uploadSession=session.getSession();
@@ -144,8 +256,9 @@ public class UploadController {
 		Date dNow = new Date( );
 		SimpleDateFormat ft = new SimpleDateFormat ("E-yyyy-MM-dd-hh-mm-ss-a-zzz");
 		
+		//for file stored in the user's cloud acount, not in rent space.
 		String cloudPath=Configuration.PATH_IN_CLOUD+ft.format(dNow)+"/"+f.getName();
-		
+		// todo for in rent space
 		
 		UploadSessionCursor cursor =new UploadSessionCursor(uploadSession,offset);
 		
@@ -171,11 +284,25 @@ public class UploadController {
 			return -2;//exception
 		}
 		
-		//load file meta data for request
+		
+		//load file meta data for request and store it into master database
 		f.setCloudPath(cloudPath);
+		CloudAccount storedAccount=null;
+		try {
+			storedAccount =car.findOneByAccount(client.users.getCurrentAccount().email, "dropbox");
+		} catch (GetCurrentAccountException e) {
+			e.printStackTrace();
+		} catch (DbxException e) {
+			e.printStackTrace();
+		}
+		
+		if(storedAccount==null)
+			return -4;//database exception
+		
+		f.setCloudAccount(storedAccount);
 		fileReps.save(f);
 		
-		
+		hm.remove(session.getSession());
 		
 		
 		
@@ -184,3 +311,4 @@ public class UploadController {
 	}
 
 }
+
