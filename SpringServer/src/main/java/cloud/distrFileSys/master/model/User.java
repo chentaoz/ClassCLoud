@@ -20,7 +20,7 @@ public class User {
 	private Long userId;
 	
 	
-	@OneToMany(fetch=FetchType.LAZY, mappedBy="user")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy="user")
 	private List<CloudAccount> cloudAccounts;
 	
 	

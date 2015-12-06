@@ -11,19 +11,42 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fluentinterface.ReflectionBuilder;
+import com.fluentinterface.builder.Builder;
+
+
 
 @Entity
 public class File {
-
+	
+	
+	public static FileBuilder create() {
+		return ReflectionBuilder.implementationFor(FileBuilder.class).create();
+	}
+	
+	public interface FileBuilder extends Builder<File> {
+		public FileBuilder withFileType(String type);
+		public FileBuilder withSize(Long size);
+		public FileBuilder withPath(String path);
+		public FileBuilder withName(String name);
+		public FileBuilder withUserId(Long uId);
+	}
+	
+	
+	
+	
+	@JsonIgnore
 	@Id
 	@GeneratedValue
 	private Long id;
 	
-
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "dir")
-   private File dir;//Directory
+    private File dir;//Directory
 	
+	@JsonIgnore
 	@OneToMany(fetch=FetchType.LAZY, mappedBy="dir")
 	private List<File> child;//file or directory 
 	
@@ -31,24 +54,29 @@ public class File {
 	
 	private long size;//value of size of file
 	
-	private String sizeUnit;// the unit for the size above, such as , b, kb ,mb ,gb, etc.
+	private String sizeUnit="b";// the unit for the size above, such as , b, kb ,mb ,gb, etc.
 	
 	private Date createdDate;
 	
 	private Date updatedDate;
 	
+	private Long userId;
+	
 	@ManyToOne
 	@JoinColumn(name="cId")
+	@JsonIgnore
 	private CloudAccount cloudAccount;
 	
+	@JsonIgnore
     private String cloudPath;
-
+	
+	@JsonIgnore
 	private String status="saved";//default is saved, other options : deleted ,lost
 	
-	
+	@JsonIgnore
 	private Integer isDir=0;// 0 represent this is file ,otherwise it's directory
 	
-	
+	@JsonIgnore
 	private Long parentDirId=(long) 0;//0 : it's in root. 
 	
 	private String path="/";//storage path in master server
@@ -175,6 +203,14 @@ public class File {
 
 	public void setCloudPath(String cloudPath) {
 		this.cloudPath = cloudPath;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 

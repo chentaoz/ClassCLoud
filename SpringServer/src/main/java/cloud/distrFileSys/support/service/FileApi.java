@@ -3,6 +3,7 @@ package cloud.distrFileSys.support.service;
 import java.util.Collection;
 
 import cloud.distrFileSys.master.model.File;
+import cloud.distrFileSys.master.model.Sessions;
 import retrofit.client.Response;
 import retrofit.http.Body;
 import retrofit.http.GET;
@@ -42,7 +43,7 @@ public interface FileApi {
 	public Collection<File> getFiles(@Path(path_path) String path);
 	
 	@POST(upload_path_start)
-	public Response addFile(@Path(pah_id) long id, @Body File f);
+	public Sessions addFile(@Path(pah_id) long id, @Body File f);
 	
 	@POST(upload_path_end)
 	public Response addFile(@Path(pah_id) long id,@Part(para_session) String sessionToken);

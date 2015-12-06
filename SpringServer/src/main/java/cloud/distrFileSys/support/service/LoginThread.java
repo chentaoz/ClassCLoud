@@ -47,19 +47,19 @@ public class LoginThread extends Thread {
 			car=(CloudAccountReps)o;
 		}
 		switch (option){
-			case "at":this.accessToekn=ID;this.option=option;break;
-			case "em":this.email=ID;this.option=option;break;
-			case "ai":this.accountId=Long.parseLong(ID);
+			case "at":this.accessToekn=ID;this.option=option;this.car=(CloudAccountReps)o;break;
+			case "em":this.email=ID;this.option=option;this.car=(CloudAccountReps)o;break;
+			case "ai":this.accountId=Long.parseLong(ID);this.car=(CloudAccountReps)o;this.option=option;break;
 			default: break;
 		}
 	}
 	
 	
 	public void run(){
-		switch (option){
+		switch (this.option){
 			case "at":loginByAccessToken(accessToekn);break;
 			case "em":loginByEmail(email);break;
-			case "ai":
+			case "ai":loginByAccountId(accountId);break;
 			default: break;
 		}
 		
@@ -76,7 +76,7 @@ public class LoginThread extends Thread {
 	}
 	public void loginByEmail(String em){
 		if(provider=="dropbox"){
-			String at=car.findOneByAccount(em, "dropbox").getAccessToken();
+			String at=car.findOneByAccount(em, "dropbox").get(0).getAccessToken();
 			DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
 			DbxClientV2 client = new DbxClientV2(config, at);
 			this.client=client; 

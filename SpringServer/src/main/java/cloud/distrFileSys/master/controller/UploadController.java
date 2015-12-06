@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
@@ -64,13 +65,15 @@ public class UploadController {
 	HashMap<String,String> hm1=new HashMap<String,String>();
 	
 	@RequestMapping(value = Configuration.UPLOAD_PATH_START,method = RequestMethod.POST)
-	public Sessions applyToUpload (@RequestBody File f,@PathVariable("id") long id) {
+	public @ResponseBody Sessions applyToUpload (@RequestBody File f,@PathVariable("id") long id) {
 		ArrayList<String> accessTokens=new ArrayList<String>();
 		
 		Sessions response=new Sessions();
+		User u=ur.findOne(id);
+		List<CloudAccount> cs=null;
 		if(true){//todo: we need function to authenticate the user
-			User u=ur.findOne(id);
-			for(CloudAccount ca : u.getCloudAccounts()){
+			cs=car.findByUser(u);
+			for(CloudAccount ca : cs){
 				accessTokens.add(ca.getAccessToken());
 			}
 		}
@@ -79,8 +82,6 @@ public class UploadController {
 			response.setError("-1");
 			return response;
 		}
-		
-		
 		List<DbxClientV2> clients=new ArrayList<DbxClientV2>();
 		for(String at: accessTokens){
 		  DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
@@ -93,55 +94,66 @@ public class UploadController {
 		//loaderbalance
 		DbxClientV2 maxSpaceClient=null;
 		Long maxSpace=new Long(0);
-		for(DbxClientV2 client:clients){
-			Users users=client.users;
-			SpaceUsage us=null;
-			try {
-				us=users.getSpaceUsage();
-			} catch (GetSpaceUsageException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				response.setError("-2");
-				return response;//exception
-			} catch (DbxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				response.setError("-2");
-				return response;//exception
-			}
-			Long cid=new Long(0);
-			try {
-				cid = car.findOneByAccount(users.getCurrentAccount().email, "dropbox").getcId();
-			} catch (GetCurrentAccountException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DbxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			Long newSpace;
-			if(accRent.getAllRentAccountBySupplierAccId(cid)!=null){
-				float totalRent=0;
-				for(CloudAccountRent car1:accRent.getAllRentAccountBySupplierAccId(cid)){
-					totalRent+=car1.getRate();
+		if(clients.size()!=0)
+			for(DbxClientV2 client:clients){
+				Users users=client.users;
+				SpaceUsage us=null;
+				try {
+					us=users.getSpaceUsage();
+				} catch (GetSpaceUsageException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					response.setError("-2");
+					return response;//exception
+				} catch (DbxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					response.setError("-2");
+					return response;//exception
 				}
-				newSpace=(long) (us.allocation.getIndividual().allocated*(1-totalRent)-us.used);	
-			}
-			else{
+				Long cid=new Long(0);
+				try {
+					System.out.println(users.getCurrentAccount().email);
+					cid = car.findOneByAccount(users.getCurrentAccount().email, "dropbox").get(0).getcId();
+				} catch (GetCurrentAccountException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					response.setError("hibernate bug1 !");
+					return response;//exception
+				} catch (DbxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					response.setError("hibernate bug2 !");
+					return response;//exception
+				}
+				Long newSpace;
+				if(accRent.getAllRentAccountBySupplierAccId(cid)!=null){
+					float totalRent=0;
+					for(CloudAccountRent car1:accRent.getAllRentAccountBySupplierAccId(cid)){
+						totalRent+=car1.getRate();
+					}
+					newSpace=(long) (us.allocation.getIndividual().allocated*(1-totalRent)-us.used);	
+				}
+				else{
+					newSpace=us.allocation.getIndividual().allocated-us.used;
+				}
 				newSpace=us.allocation.getIndividual().allocated-us.used;
-			}
-			
-			if(maxSpaceClient==null){
-				maxSpaceClient=client;
-				maxSpace=newSpace;	
+				
+				//debug
+				//response.setError(""+us.used);
+				//return response;
+				
+				if(maxSpaceClient==null){
+					maxSpaceClient=client;
+					maxSpace=newSpace;	
+					
+				}
+				else if(maxSpace < newSpace){
+					maxSpaceClient=client;
+					maxSpace=newSpace;	
+				}
 				
 			}
-			else if(maxSpace < newSpace){
-				maxSpaceClient=client;
-				maxSpace=newSpace;	
-			}
-			
-		}
 		
 		if(maxSpace<f.getSize()){
 			
@@ -166,13 +178,15 @@ public class UploadController {
 							String MaxAccEmail=null;
 							for(CloudAccountRent ca2:accRent.getAllRentAccount(id)){
 	
-								LoginThread lt=new LoginThread("dropbox",""+ca2.getSupplierAccId(),"ai",car);
+								LoginThread lt=new LoginThread("dropbox",""+ca2.getSupplierAccId
+										(),"ai",car);
 								lt.start();
 								lt.setVariable(ca2);
 								alThreads.add(lt);
 								
 							}
 							ArrayList<DbxClientV2> suppliers=new ArrayList<DbxClientV2> ();
+							
 							for(LoginThread sngT: alThreads){
 								try {
 									sngT.join();//wait until thread finish.
@@ -181,13 +195,15 @@ public class UploadController {
 									else{
 										DbxClientV2 supplier=(DbxClientV2)(sngT.getClient());
 										
+										maxSpaceClient=supplier;
+										break;
+										//simplified ,future effort !!!!!	
 									}
 									
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
-							}
-							
+							}	
 						}
 					}
 					
@@ -196,7 +212,11 @@ public class UploadController {
 			
 			
 		}
-		
+		if(maxSpaceClient==null)
+		{
+			response.setError("-4");
+			return response;
+		}
 		UploadSessionStartUploader st=null;
 		try {
 			st=maxSpaceClient.files.uploadSessionStart();
@@ -224,9 +244,13 @@ public class UploadController {
 		hm.put(sessionId,maxSpaceClient);
 		
 		response.setSession(sessionId);
+		System.out.println(sessionId);
 		response.setAccessToken(maxSpaceClient.getAccessToken());
-		
+		System.out.println(maxSpaceClient.getAccessToken());
+		response.setError("0");
 		return response;
+		
+		
 		
     }
 	
@@ -289,7 +313,7 @@ public class UploadController {
 		f.setCloudPath(cloudPath);
 		CloudAccount storedAccount=null;
 		try {
-			storedAccount =car.findOneByAccount(client.users.getCurrentAccount().email, "dropbox");
+			storedAccount =car.findOneByAccount(client.users.getCurrentAccount().email, "dropbox").get(0);
 		} catch (GetCurrentAccountException e) {
 			e.printStackTrace();
 		} catch (DbxException e) {
@@ -300,6 +324,7 @@ public class UploadController {
 			return -4;//database exception
 		
 		f.setCloudAccount(storedAccount);
+		f.setUserId(id);
 		fileReps.save(f);
 		
 		hm.remove(session.getSession());

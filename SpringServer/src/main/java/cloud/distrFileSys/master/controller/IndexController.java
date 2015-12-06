@@ -53,10 +53,11 @@ public class IndexController {
 		  List<String> jsp_clients=new ArrayList<String>();
 		  for(DbxClientV2 c :clients){
 			  Users.FullAccount account = c.users.getCurrentAccount();
-			  jsp_clients.add(account.name.displayName);
+			  jsp_clients.add(account.email);
 		  }
-		  
+		 
 		  model.addAttribute("clients", jsp_clients);
+		  model.addAttribute("space",clients.get(0).users.getSpaceUsage().used);
 	        
 	      return "login";
 		  
