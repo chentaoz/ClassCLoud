@@ -10,7 +10,7 @@ public class Configuration {
 	
 	public final static String GET_FILE_PATH="get/{path}";
 	
-	public final static String DOWNLOAD_PROCESS_PATH="";
+	public final static String DOWNLOAD_PROCESS_PATH="/download/{path}/{user_id}";
 	
 	public final static String PATH_IN_CLOUD="/distrStore/";
 	

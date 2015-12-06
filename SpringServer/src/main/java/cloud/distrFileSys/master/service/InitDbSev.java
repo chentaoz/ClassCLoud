@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import cloud.distrFileSys.master.model.CloudAccount;
 import cloud.distrFileSys.master.model.CloudAccountRent;
 import cloud.distrFileSys.master.model.CloudAccountReps;
+import cloud.distrFileSys.master.model.File;
+import cloud.distrFileSys.master.model.FileReps;
 import cloud.distrFileSys.master.model.RentReps;
 import cloud.distrFileSys.master.model.TestModel;
 import cloud.distrFileSys.master.model.User;
@@ -27,6 +29,8 @@ public class InitDbSev {
 	private testReps t;
 	@Autowired
 	private RentReps rp;
+	@Autowired
+	private FileReps fp;
 	
 	@PostConstruct
 	public void init(){
@@ -87,7 +91,17 @@ public class InitDbSev {
 		cr.setRate((float) 0.6);
 		
 		rp.save(cr);
+// initial file
+		File firstfile=new File();
 		
+		firstfile.setPath("a");
+		firstfile.setUserId((long) 1);
+		firstfile.setCloudPath("b");
+		firstfile.setCloudAccount(firstAccount);
+		
+		fp.save(firstfile);
+		//for test
+
 	}
 	
 }

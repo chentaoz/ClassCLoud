@@ -81,12 +81,19 @@ public class ClientSideTest {
 			System.out.println(s.getError());
 			
 			assertEquals(s.getError(), "0");
+			
+		
 		    
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//return s;
 	}
 	
+	@Test
+	public void finishUpload() throws Exception{
+		initialUpload();
+	}
 	
 }
