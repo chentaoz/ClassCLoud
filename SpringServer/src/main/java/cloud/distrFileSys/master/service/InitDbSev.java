@@ -87,7 +87,7 @@ public class InitDbSev {
 		CloudAccountRent cr=new CloudAccountRent();
 		cr.setClientId(u1.getUserId());
 		
-		cr.setSupplierAccId(firstAccount.getcId());
+		cr.setSupplierAccId(thirdAccount.getcId());
 		
 		cr.setRate((float) 0.6);
 		
@@ -95,9 +95,11 @@ public class InitDbSev {
 // initial file
 		File firstfile=new File();
 		
-		firstfile.setPath("a");
+		firstfile.setPath("/test");
+		firstfile.setName("test");
+		firstfile.setFileType(".txt");
 		firstfile.setUserId((long) 1);
-		firstfile.setCloudPath("b");
+		firstfile.setCloudPath("/cloud/test");
 		firstfile.setCloudAccount(firstAccount);
 		
 		fp.save(firstfile);

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,10 +21,13 @@ import java.util.Date;
 import cloud.distrFileSys.master.model.BackUpSessions;
 import cloud.distrFileSys.master.model.FileReps;
 import cloud.distrFileSys.master.model.Sessions;
+import cloud.distrFileSys.support.service.CipherForFile;
 import cloud.distrFileSys.support.service.Configuration;
 import cloud.distrFileSys.support.service.FileApi;
+import cloud.distrFileSys.support.service.StatisticsInputStream;
 import retrofit.RestAdapter;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.junit.Test;
 
 import com.dropbox.core.DbxRequestConfig;
@@ -36,6 +40,7 @@ import com.dropbox.core.v2.Files.UploadSessionFinishBuilder;
 import com.dropbox.core.v2.Files.UploadSessionFinishUploader;
 import com.dropbox.core.v2.Files.UploadSessionStartUploader;
 import com.dropbox.core.v2.Files.WriteMode;
+import com.google.common.io.ByteStreams;
 public class ClientSideTest {
 	private static final String SERVER = "http://localhost:8080/SpringServer/";
 	
@@ -145,8 +150,10 @@ public class ClientSideTest {
 //		String sessionId=st.finish().sessionId;
 //		this.sess.setSession(sessionId);
 		UploadSessionAppendBuilder upAppBuilder=client.files.uploadSessionAppendBuilder(session, 0);
-		FileInputStream fi=new FileInputStream(path);
+		InputStream fi=new FileInputStream(path);
+		fi=CipherForFile.encrptionInputStream("squirrel123", fi);
 		upAppBuilder.run(fi);
+		System.out.println(testOffSet+"||"+fi.available());
 //		Date dNow = new Date( );
 //		SimpleDateFormat ft = new SimpleDateFormat ("E-yyyy-MM-dd-hh-mm-ss-a-zzz");
 //		
@@ -165,7 +172,14 @@ public class ClientSideTest {
 		//finishUpload();
 		
 		Long i=(long)(fileSvc.addFileE(uid, session,testOffSet,file));
-		assertTrue(i>0);
+		if(i<(long)0){
+			testOffSet=0-i;
+			i=(long)(fileSvc.addFileE(uid, session,testOffSet,file));
+			System.out.println("uploading");
+		}
+		if(i==(long)0)
+			System.out.println("upload failed");
+		
 		System.out.println(i);
 		System.out.println("uploaded!");
 		
@@ -174,6 +188,7 @@ public class ClientSideTest {
 			DbxRequestConfig configb = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
 			DbxClientV2 clientb = new DbxClientV2(configb, this.sess.getAccessToken_backup());
 			InputStream inb = new FileInputStream(path);
+			inb=CipherForFile.encrptionInputStream("squirrel123", inb);
 			Date dNow = new Date( );
 			SimpleDateFormat ft = new SimpleDateFormat ("E-yyyy-MM-dd-hh-mm-ss-a-zzz");
 			String back_path=Configuration.PATH_IN_CLOUD_BACKUP+ft.format(dNow)+"/"+file.getName();
@@ -182,7 +197,7 @@ public class ClientSideTest {
 			bs.setCemail(clientb.users.getCurrentAccount().email);
 			bs.setCpath(back_path);
 			bs.setFid(i);
-			
+			inb.close();
 			fileSvc.addFileB(bs);
 			
 			

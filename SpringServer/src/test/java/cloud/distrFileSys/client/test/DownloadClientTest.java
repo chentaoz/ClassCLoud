@@ -73,17 +73,18 @@ public class DownloadClientTest {
 		
 	}
 	
-//	public static void main(String args[]) throws Users.GetCurrentAccountException, DbxException {
-//        DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
-//        DbxClientV2 client = new DbxClientV2(config, accToken);
-//        
-//        Users.FullAccount account = client.users.getCurrentAccount();
-//        System.out.println(account.name.displayName);
-//
-//    
-//	
-//	Object inputstream;
-//	downloadingFData = DbxDownloader(result, inputstream);
-//}
+	Long UID=new Long(1);
+	
+	@Test
+	public  void getMetaDatas() throws Exception{
+		long uid=UID;
+		List<cloud.distrFileSys.master.model.File> fs=fileSvc.getMetaFiles(uid);
+		assertTrue(fs!=null);
+		if(fs!=null)
+			for(cloud.distrFileSys.master.model.File f:fs){
+				System.out.println(f.getName());
+			}
+		
+	}
 }
 

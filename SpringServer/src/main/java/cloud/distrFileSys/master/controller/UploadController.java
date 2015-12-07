@@ -21,6 +21,7 @@ import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.Files.CommitInfo;
 import com.dropbox.core.v2.Files.UploadSessionCursor;
 import com.dropbox.core.v2.Files.UploadSessionFinishBuilder;
+import com.dropbox.core.v2.Files.UploadSessionFinishError;
 import com.dropbox.core.v2.Files.UploadSessionFinishException;
 import com.dropbox.core.v2.Files.UploadSessionFinishUploader;
 import com.dropbox.core.v2.Files.UploadSessionStartException;
@@ -303,7 +304,7 @@ public class UploadController {
 	
 	@RequestMapping(value = Configuration.UPLOAD_PATH_END,method = RequestMethod.POST)
 	@Transactional
-	public @ResponseBody Integer finishUpload (@RequestBody File f,@PathVariable("id") long id,
+	public @ResponseBody Long finishUpload (@RequestBody File f,@PathVariable("id") long id,
 			@PathVariable("session") String session,@PathVariable("offset") Long offSet){
 		DbxClientV2 client=hm.get(session);
 		ArrayList<String> accessTokens=new ArrayList<String>();
@@ -316,7 +317,7 @@ public class UploadController {
 		}
 		else{
 			// authentication failed
-			return -1;
+			return (long) 0;
 		}
 		System.out.println("test point 1!!!!!!!!!!!!");
 		String uploadSession=session;
@@ -341,18 +342,21 @@ public class UploadController {
 		try {
 			finishUpload=finisher.start();
 		} catch (UploadSessionFinishException e) {
-			e.printStackTrace();
-			return -2;//exception
+			UploadSessionFinishError error=e.errorValue;
+			long offsetco=error.getLookupFailed().getIncorrectOffset().correctOffset;
+			offsetco=0-offsetco;
+			return offsetco;//exception
 		} catch (DbxException e) {
 			e.printStackTrace();
-			return -2;//exception
+			return (long) 0;//exception
 		}
 		try {
 			cloudPath=finishUpload.finish().pathLower;
 		} catch (DbxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return -2;//exception
+			UploadSessionFinishError error=((UploadSessionFinishException)e).errorValue;
+			long offsetco=error.getLookupFailed().getIncorrectOffset().correctOffset;
+			offsetco=0-offsetco;
+			return offsetco;//exception
 		}
 		
 		
@@ -368,7 +372,7 @@ public class UploadController {
 		}
 		
 		if(storedAccount==null)
-			return -4;//database exception
+			return (long) 0;//database exception
 		
 		f.setCloudAccount(storedAccount);
 		f.setUserId(id);
@@ -380,7 +384,7 @@ public class UploadController {
 		System.out.println(f.getFileType()+"....."+f.getSize()+"....."+f.getId()+"....."+f.getPath()+"....."+f.getCloudAccount().getAccount()+"....."+f.getCloudPath());
 		
 		
-        return (Integer.parseInt(""+f.getId())); 
+        return (f.getId()); 
 	}
 
 	

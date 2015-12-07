@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import cloud.distrFileSys.master.model.CloudAccount;
+import cloud.distrFileSys.master.model.File;
 import cloud.distrFileSys.master.model.FileReps;
 import cloud.distrFileSys.support.service.Configuration;
 
@@ -46,5 +47,12 @@ public class DownloadController {
 			
 			
 		}
+	 
+	 @RequestMapping(value =  "files/{uid}", method = RequestMethod.GET)
+	 public @ResponseBody List<File> getMetaFs(@PathVariable Long uid){
+		 List<File> fs=fr.findByUserId(uid);
+		 return fs;
+	 }
+	 
 
 }

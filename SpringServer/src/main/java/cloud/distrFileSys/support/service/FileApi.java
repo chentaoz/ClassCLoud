@@ -51,8 +51,9 @@ public interface FileApi {
 	public Integer addFileE(@Path(pah_id) long id,@Path(para_session) String session,@Path("offset") Long offset,@Body File f);
 	
 	@POST(Configuration.UPLOAD_PATH_BACK)
-	public Integer addFileB(@Body BackUpSessions s);
-	
+	public Long addFileB(@Body BackUpSessions s);
+	@GET("/files/{uid}")
+	public List<File> getMetaFiles(@Path("uid") Long uid);
 	
 	
 	@GET(Configuration.DOWNLOAD_PROCESS_PATH)

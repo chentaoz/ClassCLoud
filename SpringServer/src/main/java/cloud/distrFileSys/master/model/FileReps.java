@@ -11,5 +11,7 @@ public interface FileReps extends JpaRepository<File,Long> {
 	
 	@Query("select f from File f where  f.userId=:uid and f.path =:path")
 	List<File> findByUserandPath (@Param("uid") Long uid, @Param("path") String path);
+	
+	List<File> findByUserId(Long uid);
 
 }
