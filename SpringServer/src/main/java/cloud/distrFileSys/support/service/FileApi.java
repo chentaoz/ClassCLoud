@@ -3,6 +3,7 @@ package cloud.distrFileSys.support.service;
 import java.util.Collection;
 import java.util.List;
 
+import cloud.distrFileSys.master.model.BackUpSessions;
 import cloud.distrFileSys.master.model.File;
 import cloud.distrFileSys.master.model.Sessions;
 import retrofit.client.Response;
@@ -49,8 +50,14 @@ public interface FileApi {
 	@POST(upload_path_end)
 	public Integer addFileE(@Path(pah_id) long id,@Path(para_session) String session,@Path("offset") Long offset,@Body File f);
 	
+	@POST(Configuration.UPLOAD_PATH_BACK)
+	public Integer addFileB(@Body BackUpSessions s);
+	
+	
+	
 	@GET(Configuration.DOWNLOAD_PROCESS_PATH)
 	public List<String> downfileinfo(@Path("path") String path, @Path("user_id") Long uid);
 
+	
 	
 }

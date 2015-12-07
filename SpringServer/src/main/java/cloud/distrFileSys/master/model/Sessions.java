@@ -10,6 +10,14 @@ public class Sessions {
 	
 	private long offset=0;
 	
+	private String accessToken_backup="N/A";
+	
+	public String getAccessToken_backup() {
+		return accessToken_backup;
+	}
+	public void setAccessToken_backup(String accessToken_backup) {
+		this.accessToken_backup = accessToken_backup;
+	}
 	public String getAccessToken() {
 		return accessToken;
 	}

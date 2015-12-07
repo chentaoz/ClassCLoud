@@ -8,6 +8,8 @@ public class Configuration {
 	
 	public final static String UPLOAD_PATH_END="/upload_done/{id}/{session}/{offset}";
 	
+	public final static String UPLOAD_PATH_BACK="/upload_backup";
+	
 	public final static String GET_FILE_PATH="get/{path}";
 	
 	public final static String DOWNLOAD_PROCESS_PATH="/download/{path}/{user_id}";

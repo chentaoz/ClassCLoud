@@ -17,6 +17,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import cloud.distrFileSys.master.model.BackUpSessions;
 import cloud.distrFileSys.master.model.FileReps;
 import cloud.distrFileSys.master.model.Sessions;
 import cloud.distrFileSys.support.service.Configuration;
@@ -75,7 +76,7 @@ public class ClientSideTest {
 	}
 	
 	private Sessions sess;
-	private Long UID=new Long(2);
+	private Long UID=new Long(1);
 	private String PATH="src/test/resources/test.mp4";
 	private Long testOffSet=new Long(0);
 	@Test
@@ -163,9 +164,31 @@ public class ClientSideTest {
 		System.out.println("-----------------------------------------fin start-----------------------------");
 		//finishUpload();
 		
-		Integer i=fileSvc.addFileE(uid, session,testOffSet,file);
-		assertTrue(i==1);
-		System.out.println(i);	
+		Long i=(long)(fileSvc.addFileE(uid, session,testOffSet,file));
+		assertTrue(i>0);
+		System.out.println(i);
+		System.out.println("uploaded!");
+		
+//..........................................backup for file................................//
+		if(!this.sess.getAccessToken_backup().equals("N/A")){
+			DbxRequestConfig configb = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
+			DbxClientV2 clientb = new DbxClientV2(configb, this.sess.getAccessToken_backup());
+			InputStream inb = new FileInputStream(path);
+			Date dNow = new Date( );
+			SimpleDateFormat ft = new SimpleDateFormat ("E-yyyy-MM-dd-hh-mm-ss-a-zzz");
+			String back_path=Configuration.PATH_IN_CLOUD_BACKUP+ft.format(dNow)+"/"+file.getName();
+			String Id_in_co=clientb.files.uploadBuilder(back_path).run(inb).id;
+			BackUpSessions bs=new BackUpSessions();
+			bs.setCemail(clientb.users.getCurrentAccount().email);
+			bs.setCpath(back_path);
+			bs.setFid(i);
+			
+			fileSvc.addFileB(bs);
+			
+			
+			
+		}
+		
 		
 		
 	}

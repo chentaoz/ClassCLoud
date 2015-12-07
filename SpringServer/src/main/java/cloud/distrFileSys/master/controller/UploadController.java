@@ -31,6 +31,8 @@ import com.dropbox.core.v2.Users.GetCurrentAccountException;
 import com.dropbox.core.v2.Users.GetSpaceUsageException;
 import com.dropbox.core.v2.Users.SpaceUsage;
 
+import cloud.distrFileSys.master.model.BackSReps;
+import cloud.distrFileSys.master.model.BackUpSessions;
 import cloud.distrFileSys.master.model.CloudAccount;
 import cloud.distrFileSys.master.model.CloudAccountRent;
 import cloud.distrFileSys.master.model.CloudAccountReps;
@@ -60,12 +62,15 @@ public class UploadController {
 	@Autowired
 	CloudAccountReps car;
 	
+	@Autowired
+	BackSReps bsp;
+	
 	//temperate store , session is better
 	HashMap<String,DbxClientV2> hm=new HashMap<String,DbxClientV2>();
 	HashMap<String,String> hm1=new HashMap<String,String>();
 	
 	@RequestMapping(value = Configuration.UPLOAD_PATH_START,method = RequestMethod.POST)
-	public @ResponseBody Sessions applyToUpload (@RequestBody File f,@PathVariable("id") long id) {
+	public @ResponseBody Sessions applyToUpload (@RequestBody File f,@PathVariable("id") long id) throws GetCurrentAccountException, DbxException {
 		ArrayList<String> accessTokens=new ArrayList<String>();
 		
 		Sessions response=new Sessions();
@@ -259,6 +264,37 @@ public class UploadController {
 		response.setAccessToken(maxSpaceClient.getAccessToken());
 		System.out.println(maxSpaceClient.getAccessToken());
 		response.setError("0");
+		
+		
+		//choose backup account
+		if(clients!=null && clients.size()>1)
+			for(DbxClientV2 cli:clients){
+				if(cli==maxSpaceClient)
+					continue;
+				else{
+					float totalRent=0;
+					Long cidd=car.findOneByAccount(cli.users.getCurrentAccount().email, "dropbox").get(0).getcId();
+					for(CloudAccountRent car1:accRent.getAllRentAccountBySupplierAccId(cidd)){
+						totalRent+=car1.getRate();
+					}
+					long senewSpace=(long) (cli.users.getSpaceUsage().allocation.getIndividual().allocated*(1-totalRent)-cli.users.getSpaceUsage().used);	
+					if(senewSpace>f.getSize()){
+						response.setAccessToken_backup(cli.getAccessToken());
+						break;
+					}
+				}
+					
+			}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		return response;
 		
 		
@@ -344,8 +380,21 @@ public class UploadController {
 		System.out.println(f.getFileType()+"....."+f.getSize()+"....."+f.getId()+"....."+f.getPath()+"....."+f.getCloudAccount().getAccount()+"....."+f.getCloudPath());
 		
 		
-        return 1; 
+        return (Integer.parseInt(""+f.getId())); 
 	}
 
+	
+	@RequestMapping(value = Configuration.UPLOAD_PATH_BACK,method = RequestMethod.POST)
+	public @ResponseBody Integer backupF (@RequestBody BackUpSessions s){
+		
+		bsp.save(s);
+		
+		System.out.println(s.getCemail()+"------------------"+s.getCpath()+"-------------"+s.getbId()+"------"+s.getFid());
+		return null;
+	}
+	
+	
 }
+
+
 
