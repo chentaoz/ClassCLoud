@@ -89,7 +89,15 @@ public class UploadController {
 		  clients.add(client);
 		}
 		
+		//test-------------------------------------------------------------
 		
+//		clients=new ArrayList<DbxClientV2>();
+//		String testtoekn="qkh1oWRdV5AAAAAAAAAAG927BK8Onynf1CFfBbwcGJQEItTKsoHX4eW7zdD4sqbv";
+//		 DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
+//		  DbxClientV2 cl = new DbxClientV2(config, testtoekn);
+//		  
+//		  clients.add(cl);
+		//-------------------------------------------------------------------
 	
 		//loaderbalance
 		DbxClientV2 maxSpaceClient=null;
@@ -217,6 +225,9 @@ public class UploadController {
 			response.setError("-4");
 			return response;
 		}
+	
+		
+		
 		UploadSessionStartUploader st=null;
 		try {
 			st=maxSpaceClient.files.uploadSessionStart();
@@ -256,9 +267,9 @@ public class UploadController {
 	
 	@RequestMapping(value = Configuration.UPLOAD_PATH_END,method = RequestMethod.POST)
 	@Transactional
-	public int finishUpload (@RequestBody File f,@PathVariable("id") long id,
-			@PathVariable("session") Sessions session){
-		DbxClientV2 client=hm.get(session.getSession());
+	public @ResponseBody Integer finishUpload (@RequestBody File f,@PathVariable("id") long id,
+			@PathVariable("session") String session,@PathVariable("offset") Long offSet){
+		DbxClientV2 client=hm.get(session);
 		ArrayList<String> accessTokens=new ArrayList<String>();
 
 		if(true){//todo: we need function to authenticate the user
@@ -271,10 +282,10 @@ public class UploadController {
 			// authentication failed
 			return -1;
 		}
-		
-		String uploadSession=session.getSession();
-		long offset=session.getOffset();
-	
+		System.out.println("test point 1!!!!!!!!!!!!");
+		String uploadSession=session;
+		long offset=offSet;
+		System.out.println("test point 2!!!!!!!!!!!!");
 		
 		//allocate path in cloud
 		Date dNow = new Date( );
@@ -327,9 +338,10 @@ public class UploadController {
 		f.setUserId(id);
 		fileReps.save(f);
 		
-		hm.remove(session.getSession());
+		hm.remove(session);
 		
-		
+		//test 
+		System.out.println(f.getFileType()+"....."+f.getSize()+"....."+f.getId()+"....."+f.getPath()+"....."+f.getCloudAccount().getAccount()+"....."+f.getCloudPath());
 		
 		
         return 1; 

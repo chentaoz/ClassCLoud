@@ -57,8 +57,9 @@ public class IndexController {
 		  }
 		 
 		  model.addAttribute("clients", jsp_clients);
-		  model.addAttribute("space",clients.get(0).users.getSpaceUsage().used);
-	        
+		  model.addAttribute("space1",clients.get(0).users.getSpaceUsage().used);
+		  model.addAttribute("space2",clients.get(1).users.getSpaceUsage().used);
+		  model.addAttribute("space3",clients.get(2).users.getSpaceUsage().used);
 	      return "login";
 		  
 	  }

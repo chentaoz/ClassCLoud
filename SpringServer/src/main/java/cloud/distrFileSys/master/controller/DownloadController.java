@@ -1,5 +1,8 @@
 package cloud.distrFileSys.master.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,27 +21,27 @@ public class DownloadController {
 	FileReps fr;
 	
 	 @RequestMapping(value =  Configuration.DOWNLOAD_PROCESS_PATH, method = RequestMethod.GET)
-	 public @ResponseBody String[] sendRequest(@PathVariable("path") String path, @PathVariable("user_id") Long uid){
-			
-			String cloudpath = new String();
-
+	 public @ResponseBody List<String> sendRequest(@PathVariable("path") String path, @PathVariable("user_id") Long uid){
+			path=path.replace("%", "/");
+		 	String cloudpath = new String();
 			cloudpath = fr.findByUserandPath(uid, path).get(0).getCloudPath();
-			System.out.println(fr.findByUserandPath(uid, cloudpath).size());
+			
 
 			
 			CloudAccount cloudacc = new CloudAccount();
-			cloudacc = fr.findByUserandPath(uid, cloudpath).get(0).getCloudAccount();
-			System.out.println(fr.findByUserandPath(uid, cloudpath).size());
+			cloudacc = fr.findByUserandPath(uid, path).get(0).getCloudAccount();
+			
+			
 			String accessToken = new String();
 			accessToken = cloudacc.getAccessToken();
 			
-			String info[];
-			info = new String[1];
 			
-			info[0] = cloudpath;
-			info[1] = accessToken;
+			List<String> s = new ArrayList<String>();
+			s.add(cloudpath);
+			s.add(accessToken);
 			
-			return info;
+			return s;
+
 			
 			
 			

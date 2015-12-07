@@ -1,6 +1,7 @@
 package cloud.distrFileSys.support.service;
 
 import java.util.Collection;
+import java.util.List;
 
 import cloud.distrFileSys.master.model.File;
 import cloud.distrFileSys.master.model.Sessions;
@@ -46,8 +47,10 @@ public interface FileApi {
 	public Sessions addFile(@Path(pah_id) long id, @Body File f);
 	
 	@POST(upload_path_end)
-	public Response addFile(@Path(pah_id) long id,@Part(para_session) String sessionToken);
+	public Integer addFileE(@Path(pah_id) long id,@Path(para_session) String session,@Path("offset") Long offset,@Body File f);
 	
+	@GET(Configuration.DOWNLOAD_PROCESS_PATH)
+	public List<String> downfileinfo(@Path("path") String path, @Path("user_id") Long uid);
 
 	
 }

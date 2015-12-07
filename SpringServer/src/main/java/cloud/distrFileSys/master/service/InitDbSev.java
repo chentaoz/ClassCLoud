@@ -58,28 +58,29 @@ public class InitDbSev {
 		
 		CloudAccount firstAccount=new CloudAccount();
 		
-		firstAccount.setAccount("chentaoz@udel.edu");
+		firstAccount.setAccount("freedom.718@hotmail.com");
 		firstAccount.setAccessToken("UEL51iPANmAAAAAAAAAABupojQNQQbbABMzZ1_Ai-U3lNsad4UZLJU1t96gY4Ar_");
 		firstAccount.setProvider("dropbox");
 		firstAccount.setUser(u);
-		car.save(firstAccount);
+		
 		
 		CloudAccount secondAccount=new CloudAccount();
 		
-		secondAccount.setAccount("freedom.718@hotmail.com");
+		secondAccount.setAccount("huiding@udel.edu");
 		secondAccount.setAccessToken("3Tlm1-6FWdAAAAAAAAAABQO90jv5Mmgl_w8Obvx_JviZ1ODv__8qB6BYuUxpoXge");
 		secondAccount.setProvider("dropbox");
-		firstAccount.setUser(u);
-		car.save(secondAccount);
+		secondAccount.setUser(u);
+		
 		
 		CloudAccount thirdAccount=new CloudAccount();
 		
-		thirdAccount.setAccount("huiding@udel.edu");
+		thirdAccount.setAccount("chentaoz@udel.edu");
 		thirdAccount.setAccessToken("qkh1oWRdV5AAAAAAAAAAG927BK8Onynf1CFfBbwcGJQEItTKsoHX4eW7zdD4sqbv");
 		thirdAccount.setProvider("dropbox");
-		firstAccount.setUser(u);
+		thirdAccount.setUser(u);
 		car.save(thirdAccount);
-		
+		car.save(secondAccount);
+		car.save(firstAccount);
 		User u1=new User();
 		ur.save(u1);
 		

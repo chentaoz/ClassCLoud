@@ -6,7 +6,7 @@ public class Configuration {
 	
 	public final static String UPLOAD_PATH_START="/upload/{id}";
 	
-	public final static String UPLOAD_PATH_END="/upload_done/{id}/{session}";
+	public final static String UPLOAD_PATH_END="/upload_done/{id}/{session}/{offset}";
 	
 	public final static String GET_FILE_PATH="get/{path}";
 	
